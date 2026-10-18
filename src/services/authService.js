@@ -1,0 +1,37 @@
+import jwt from "jsonwebtoken"
+import { env } from "../config/env.js"
+import { ApiError } from "../utils/ApiError.js"
+import {User} from "../models/userModel.js"
+export function generateToken(data) {
+   return jwt.sign({ id: data._id, email: data.email, role:data.role}, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN })
+}
+
+export async function registerUser(data){
+    let {username,email,password}=data
+    const istrue=await User.findOne({ $or: [{email}, {username}]})
+    if(istrue){
+        throw new ApiError(409,"User or Email already exists")
+    }
+    const user=await User.create({ username, email, password })
+    const token=generateToken(user)
+    user.password = undefined
+    return {user,token}
+}
+
+export async function loginUser(data){
+    let {email,password}=data;
+    const user=await User.findOne({email}).select("+password")
+    if(user){
+        const istrue=await user.comparePassword(password)
+        if(istrue){
+            const token=generateToken(user);
+            user.password = undefined
+            return {user,token}
+        }
+    }
+    throw new ApiError(401,"Invalid Email Or Password")
+}
+
+export function verifyToken(token) {
+   return jwt.verify(token, env.JWT_SECRET)
+}
