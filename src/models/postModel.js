@@ -33,5 +33,17 @@ const postSchema=new mongoose.Schema({
     timestamps:true
 })
 
+postSchema.pre("validate", function () {
+    if (this.isModified("title") && this.title) {
+        this.slug = this.title
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-");
+    }
+});
+
 postSchema.index({ title: "text", content: "text" });
-export const Post = mongoose.model("Post", postSchema);
+const Post = mongoose.model("Post", postSchema);
+export default Post

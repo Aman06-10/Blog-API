@@ -16,4 +16,16 @@ export function protect(req, res, next){
     next()
 }
 
+export function optionalAuth(req,res,next){
+    const token=req.cookies?.token
+    if(token){
+        try {
+            const decoded=verifyToken(token)
+            req.user=decoded
+        } catch (error){
+            
+        }
+    }
+    next()
+}
 
