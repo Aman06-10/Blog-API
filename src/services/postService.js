@@ -21,33 +21,26 @@ export async function getPostById(postId, viewerId) {
     throw new ApiError(404, "Post Not Found")
 }
 
-export async function updatePost(postId, data, user) {
-    const post = await Post.findById(postId)
-    if (!post) {
-        throw new ApiError(404, "Post not found")
+export async function updatePost(postId,userId,data){
+    const post= await Post.findOne({_id:postId})
+    if(!post){
+        throw new ApiError(404, "Post Not Found")
     }
-    if (post.author.toString() !== user.id && user.role !== "admin") {
-        throw new ApiError(403, "Forbidden: you can only update your own posts")
-    }
-    const allowedFields = ["title", "content", "tags", "status"]
-    for (const field of allowedFields) {
-        if (data[field] !== undefined) {
-            post[field] = data[field]
+    if((userId.toString()!==post.author.toString())){
+        if(post.status==="published"){
+            throw new ApiError(403, "You cannot update this Post")
+        }
+        else{
+            throw new ApiError(404, "Post Not Found")
         }
     }
-    await post.save()
-    return post;
-}
-
-export async function deletePost(postId, user) {
-    const post = await Post.findById(postId)
-    if (!post) {
-        throw new ApiError(404, "Post not found")
+    let updateData={}
+    const allowed=['title','content','status','tags']
+    for(const key of allowed){
+        if(key in data){
+            updateData[key]=data[key]
+        }
     }
-    if (post.author.toString() !== user.id && user.role !== "admin") {
-        throw new ApiError(403, "Forbidden: you can only delete your own posts")
-    }
-    await post.deleteOne()
-    return post;
+    const updatedPost=await Post.findByIdAndUpdate(postId,updateData,{ new: true, runValidators: true })
+    return updatedPost
 }
-

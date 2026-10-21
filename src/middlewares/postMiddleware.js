@@ -1,23 +1,15 @@
 import mongoose from "mongoose"
 import { ApiError } from "../utils/ApiError.js"
 
-export function validatePostData(req, res, next) {
-    const data = req.body
-    if (data == null || typeof data !== "object" || Array.isArray(data)) {
-        throw new ApiError(400, "title and content fields are required")
-    }
-    const allowed = ['title', 'content', 'status', 'tags']
-    const required = ['title', 'content']
-    const allowedStatus = ['draft', 'published', 'archived']
-    const errors = []
-    for (const key of Object.keys(data)) {
+const allowed = ['title', 'content', 'status', 'tags']
+const allowedStatus = ['draft', 'published', 'archived']
+const required = ['title', 'content']
+
+function validate(data,errors){
+    const keys=Object.keys(data)
+    for (const key of keys) {
         if (!allowed.includes(key)) {
             errors.push(`${key} field is not allowed`)
-        }
-    }
-    for (const key of required) {
-        if (!(key in data)) {
-            errors.push(`${key} field is required`)
         }
     }
     if ("title" in data) {
@@ -47,6 +39,33 @@ export function validatePostData(req, res, next) {
             errors.push("tags should be string valued only")
         }
     }
+}
+
+export function validatePostData(req, res, next) {
+    const data=req.body
+    if (data == null || typeof data !== "object" || Array.isArray(data)) {
+        throw new ApiError(400, "title and content are required")
+    }
+    let errors=[]
+    validate(data,errors)
+    for (const key of required) {
+        if (!(key in data)) {
+            errors.push(`${key} field is required`)
+        }
+    }
+    if (errors.length > 0) {
+        throw new ApiError(400, "Invalid post data", errors)
+    }
+    next()
+}
+
+export function validateUpdatePostData(req,res,next){
+    const data=req.body
+    if (data == null || typeof data !== "object" || Array.isArray(data) || Object.keys(data).length === 0) {
+        throw new ApiError(400, "Nothing to update")
+    }
+    let errors=[]
+    validate(data,errors)
     if (errors.length > 0) {
         throw new ApiError(400, "Invalid post data", errors)
     }
@@ -55,9 +74,6 @@ export function validatePostData(req, res, next) {
 
 export function validatePostId(req,res,next){
     const postId=req.params.id
-    if(!postId){
-        throw new ApiError(400,"Post id is required")
-    }
     const isValid=mongoose.Types.ObjectId.isValid(postId)
     if(!isValid){
         throw new ApiError(400,"Invalid post id")
