@@ -1,4 +1,3 @@
-import mongoose from "mongoose"
 import { createPost, getPosts,getPostById,updatePost, deletePost} from "../services/postService.js"
 
 export async function create(req,res){

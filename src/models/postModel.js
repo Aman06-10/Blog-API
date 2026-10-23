@@ -21,7 +21,8 @@ const postSchema=new mongoose.Schema({
     status:{
         type:String,
         enum:['draft','published','archived'],
-        default:"draft"
+        default:"draft",
+        lowercase:true
     },
     author:{
         type:mongoose.Schema.Types.ObjectId,

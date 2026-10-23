@@ -10,7 +10,6 @@ export function protect(req, res, next){
         const decoded = verifyToken(token)
         req.user = decoded
     } catch (error) {
-        console.log(error)
         throw new ApiError(401, "Unauthorized")
     }
     next()
@@ -23,7 +22,7 @@ export function optionalAuth(req,res,next){
             const decoded=verifyToken(token)
             req.user=decoded
         } catch (error){
-            
+            /// Invalid or expired token: continue as a guest.
         }
     }
     next()

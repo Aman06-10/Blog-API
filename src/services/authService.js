@@ -7,7 +7,9 @@ export function generateToken(data) {
 }
 
 export async function registerUser(data){
-    let {username,email,password}=data
+    const username=data.username.trim()
+    const email=data.email.trim().toLowerCase()
+    const password=data.password
     const istrue=await User.findOne({ $or: [{email}, {username}]})
     if(istrue){
         throw new ApiError(409,"User or Email already exists")
@@ -19,17 +21,15 @@ export async function registerUser(data){
 }
 
 export async function loginUser(data){
-    let {email,password}=data;
+    const email=data.email.trim().toLowerCase()
+    const password=data.password
     const user=await User.findOne({email}).select("+password")
-    if(user){
-        const istrue=await user.comparePassword(password)
-        if(istrue){
-            const token=generateToken(user);
-            user.password = undefined
-            return {user,token}
-        }
+    if (!user || !(await user.comparePassword(password))) {
+        throw new ApiError(401, "Invalid Email Or Password")
     }
-    throw new ApiError(401,"Invalid Email Or Password")
+    const token=generateToken(user)
+    user.password = undefined
+    return {user,token}
 }
 
 export function verifyToken(token) {

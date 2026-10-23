@@ -1,5 +1,5 @@
 import express from "express"
-import { validatePostData ,validatePostId, validateUpdatePostData} from "../middlewares/postMiddleware.js"
+import { validatePostData ,validatePostId, validateUpdatePostData} from "../validators/postValidator.js"
 import { protect,optionalAuth } from "../middlewares/authMiddleware.js"
 import { create ,deleteById,getAll,getById, updateById} from "../controllers/postController.js"
 const posts=express.Router()
