@@ -73,7 +73,7 @@ export function validateLoginData(req, res, next) {
         if (typeof (data.password) !== "string") {
             errors.push("password must be a string")
         }
-        else if (data.password.length === 0) {
+        else if (data.password.trim().length === 0) {
             errors.push("password cannot be empty")
         }
 

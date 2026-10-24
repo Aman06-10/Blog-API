@@ -1,4 +1,4 @@
-import { createPost, getPosts,getPostById,updatePost, deletePost} from "../services/postService.js"
+import { createPost, getPosts,getPostById,updatePost, deletePost, getMyPosts} from "../services/postService.js"
 
 export async function create(req,res){
     const newPost=await createPost(req.body,req.user.id)
@@ -8,6 +8,11 @@ export async function create(req,res){
 export async function getAll(req,res){
     const totalPosts=await getPosts()
     res.status(200).json({success:true, message:"Posts fetched successfully",data:totalPosts})
+}
+
+export async function getMine(req,res){
+    const myPosts=await getMyPosts(req.user.id)
+    res.status(200).json({success:true, message:"Posts fetched successfully", data:myPosts})
 }
 
 export async function getById(req,res){

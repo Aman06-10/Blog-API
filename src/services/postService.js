@@ -1,4 +1,5 @@
 import Post from "../models/postModel.js";
+import commentModel from "../models/commentModel.js";
 import { ApiError } from "../utils/ApiError.js";
 
 async function ownershipCheck(postId,userId){
@@ -51,6 +52,12 @@ export async function updatePost(postId,userId,data){
 
 export async function deletePost(postId,userId){
     const post=await ownershipCheck(postId,userId)
+    await Comment.deleteMany({post:postId})
     await Post.findByIdAndDelete(postId)
+    return post
+}
+
+export async function getMyPosts(userId){
+    const post=await Post.find({author:userId}).sort({ createdAt: -1 })
     return post
 }

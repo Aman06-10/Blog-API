@@ -33,7 +33,7 @@ function validate(data, errors) {
         if (typeof data.status !== "string") {
             errors.push("status must be a string");
         } else if (!allowedStatus.includes(data.status)) {
-            errors.push('status can only be "draft", "published" or "archived"');
+            errors.push('status can only be draft, published or archived');
         }
     }
     if ("tags" in data) {

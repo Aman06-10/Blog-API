@@ -1,6 +1,5 @@
 import { registerUser,loginUser } from "../services/authService.js";
 import { ApiError } from "../utils/ApiError.js";
-import { env } from "../config/env.js";
 
 export async function register(req, res) {
     const { user, token } = await registerUser(req.body)
@@ -9,7 +8,7 @@ export async function register(req, res) {
             httpOnly: true,
             secure: false,
             sameSite: "lax",
-            maxAge: env.JWT_EXPIRES_IN
+            maxAge: 7 * 24 * 60 * 60 * 1000
         })
         .json({ success: true, message: "Registered successfully", data: user })
 }
@@ -21,7 +20,7 @@ export async function login(req,res) {
             httpOnly: true,
             secure: false,
             sameSite: "lax",
-            maxAge: env.JWT_EXPIRES_IN
+            maxAge: 7 * 24 * 60 * 60 * 1000
         })
         .json({success:true, message:"Logged in successfully",data:user})
 }

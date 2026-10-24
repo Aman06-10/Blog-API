@@ -8,16 +8,11 @@ for (const key of requiredEnv) {
   }
 }
 
-const cookieMaxAge = Number(process.env.COOKIE_MAX_AGE);
-if (!Number.isSafeInteger(cookieMaxAge) || cookieMaxAge <= 0) {
-  throw new Error("COOKIE_MAX_AGE must be a positive integer in milliseconds");
-}
-
 export const env = {
   PORT: Number(process.env.PORT) || 5000,
   NODE_ENV: process.env.NODE_ENV || "development",
   MONGODB_URL: process.env.MONGODB_URL,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
-  COOKIE_MAX_AGE: cookieMaxAge
+  COOKIE_MAX_AGE: process.env.COOKIE_MAX_AGE
 }
