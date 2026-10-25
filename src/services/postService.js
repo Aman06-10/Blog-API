@@ -1,21 +1,25 @@
 import Post from "../models/postModel.js";
-import commentModel from "../models/commentModel.js";
+import Comment from "../models/commentModel.js";
 import { ApiError } from "../utils/ApiError.js";
 
-async function ownershipCheck(postId,userId){
-    const post= await Post.findOne({_id:postId})
-    if(!post){
+async function ownershipCheck(postId, userId) {
+    const post = await Post.findOne({ _id: postId })
+    if (!post) {
         throw new ApiError(404, "Post Not Found")
     }
-    if((userId.toString()!==post.author.toString())){
-        if(post.status==="published"){
+    if ((userId.toString() !== post.author.toString())) {
+        if (post.status === "published") {
             throw new ApiError(403, "You cannot modify this post")
         }
-        else{
+        else {
             throw new ApiError(404, "Post Not Found")
         }
     }
     return post
+}
+
+export function canViewPost(post, viewerId) {
+    return post.status === "published" || post.author.toString() === viewerId?.toString()
 }
 
 export function createPost(data, authorId) {
@@ -29,35 +33,33 @@ export async function getPosts() {
 
 export async function getPostById(postId, viewerId) {
     const post = await Post.findById(postId)
-    if (post) {
-        if (post.status === "published" || (post.author.toString()) === (viewerId?.toString())) {
-            return post
-        }
+    if (!post || !canViewPost(post, viewerId)) {
+        throw new ApiError(404, "Post Not Found")
     }
-    throw new ApiError(404, "Post Not Found")
+    return post
 }
 
-export async function updatePost(postId,userId,data){
-    await ownershipCheck(postId,userId)
-    let updateData={}
-    const allowed=['title','content','status','tags']
-    for(const key of allowed){
-        if(key in data){
-            updateData[key]=data[key]
+export async function updatePost(postId, userId, data) {
+    await ownershipCheck(postId, userId)
+    let updateData = {}
+    const allowed = ['title', 'content', 'status', 'tags']
+    for (const key of allowed) {
+        if (key in data) {
+            updateData[key] = data[key]
         }
     }
-    const updatedPost=await Post.findByIdAndUpdate(postId,updateData,{ new: true, runValidators: true })
+    const updatedPost = await Post.findByIdAndUpdate(postId, updateData, { returnDocument: "after", runValidators: true })
     return updatedPost
 }
 
-export async function deletePost(postId,userId){
-    const post=await ownershipCheck(postId,userId)
-    await Comment.deleteMany({post:postId})
+export async function deletePost(postId, userId) {
+    const post = await ownershipCheck(postId, userId)
+    await Comment.deleteMany({ post: postId })
     await Post.findByIdAndDelete(postId)
     return post
 }
 
-export async function getMyPosts(userId){
-    const post=await Post.find({author:userId}).sort({ createdAt: -1 })
+export async function getMyPosts(userId) {
+    const post = await Post.find({ author: userId }).sort({ createdAt: -1 })
     return post
 }
