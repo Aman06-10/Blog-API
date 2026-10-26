@@ -24,3 +24,24 @@ export async function getComments(postId, viewerId, page, limit) {
     return { comments, commentsCount ,page,limit}
 }
 
+export async function editComment(commentId,viewerId,data){
+    const comment=await Comment.findById({_id:commentId})
+    if(comment){
+        const post=await Post.findById(comment.post)
+        if(!post || !canViewPost(post,viewerId)){
+            throw new ApiError(404,"post not found")
+        }
+        if(comment.author.toString()===viewerId.toString()){
+            const updatedContent=data.content.trim()
+            if(updatedContent===comment.content){
+                return comment
+            }
+            const updatedComment=await Comment.findByIdAndUpdate(commentId,{content:updatedContent,editedAt:new Date()},{ returnDocument: "after", runValidators: true })
+            return updatedComment
+        }
+        else{
+            throw new ApiError(403,"you cannot modify this comment")
+        }
+    }
+    throw new ApiError(404,"comment not found")
+}
