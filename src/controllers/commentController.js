@@ -1,4 +1,4 @@
-import { createComment, editComment, getComments } from "../services/commentService.js";
+import { createComment, delComment, editComment, getComments } from "../services/commentService.js";
 
 export async function addComment(req,res){
     const newComment=await createComment(req.params.id,req.user.id,req.body)
@@ -14,4 +14,9 @@ export async function listComment(req,res){
 export async function updateComment(req,res){
     const updatedComment=await editComment(req.params.id,req.user.id,req.body)
     res.status(200).json({success:true,message:"comment updated successfully",data:updatedComment})
+}
+
+export async function deleteComment(req,res){
+    const deletedComment=await delComment(req.params.id,req.user.id,req.user.role)
+    res.status(200).json({success:true,message:"comment deleted successfully",data:deletedComment})
 }
