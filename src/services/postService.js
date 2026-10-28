@@ -26,9 +26,11 @@ export function createPost(data, authorId) {
     return Post.create({ ...data, author: authorId })
 }
 
-export async function getPosts() {
-    const posts = await Post.find({ status: "published" }).sort({ createdAt: -1 })
-    return posts;
+export async function getPosts(page,limit) {
+    const skip = (page - 1) * limit
+    const posts = await Post.find({ status: "published" }).sort({ createdAt: -1 ,_id:-1}).skip(skip).limit(limit)
+   const postsCount = await Post.countDocuments({status:"published"})
+    return { posts, postsCount ,page,limit}
 }
 
 export async function getPostById(postId, viewerId) {
@@ -59,7 +61,9 @@ export async function deletePost(postId, userId) {
     return post
 }
 
-export async function getMyPosts(userId) {
-    const post = await Post.find({ author: userId }).sort({ createdAt: -1 })
-    return post
+export async function getMyPosts(userId,page,limit) {
+    const skip = (page - 1) * limit
+    const posts = await Post.find({ author: userId }).sort({ createdAt: -1 ,_id:-1}).skip(skip).limit(limit)
+    const postsCount = await Post.countDocuments({author:userId})
+    return { posts, postsCount ,page,limit}
 }

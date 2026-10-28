@@ -8,8 +8,8 @@ import { addComment,listComment } from "../controllers/commentController.js"
 const posts=express.Router()
 
 posts.post('/',protect,validatePostData,create)
-posts.get('/',getAll)
-posts.get('/mine',protect,getMine)
+posts.get('/',validatePagination,getAll)
+posts.get('/mine',protect,validatePagination,getMine)
 posts.get('/:id',validatePostId,optionalAuth,getById)
 posts.patch("/:id",protect,validatePostId,validateUpdatePostData,updateById)
 posts.delete("/:id",protect,validatePostId,deleteById)
