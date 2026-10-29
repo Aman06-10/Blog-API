@@ -1,30 +1,41 @@
 import { verifyToken } from "../services/authService.js"
 import { ApiError } from "../utils/ApiError.js"
+import { User } from "../models/userModel.js"
 
-export function protect(req, res, next){
-    const token=req.cookies?.token
+export async function protect(req, res, next) {
+    const token = req.cookies?.token
     if (!token) {
         throw new ApiError(401, "Unauthorized")
     }
+    let decoded
     try {
-        const decoded = verifyToken(token)
-        req.user = decoded
+        decoded = verifyToken(token)
     } catch (error) {
         throw new ApiError(401, "Unauthorized")
     }
+    const user = await User.findById(decoded.id)
+    if (!user) {
+        throw new ApiError(401, "Unauthorized")
+    }
+    req.user = user
     next()
 }
 
-export function optionalAuth(req,res,next){
-    const token=req.cookies?.token
-    if(token){
+export async function optionalAuth(req, res, next) {
+    const token = req.cookies?.token
+    if (token) {        
+        let decoded
         try {
-            const decoded=verifyToken(token)
-            req.user=decoded
-        } catch (error){
-            /// Invalid or expired token: continue as a guest.
+            decoded = verifyToken(token)
+        } catch (error) {
+            // Invalid or expired token: continue as a guest.
+        }
+        if (decoded) {
+            const user = await User.findById(decoded.id)
+            if (user) {
+                req.user = user
+            }
         }
     }
     next()
 }
-

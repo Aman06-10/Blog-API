@@ -1,6 +1,9 @@
 import mongoose from "mongoose"
 import { ApiError } from "../utils/ApiError.js"
+import { normalizeTag } from "../utils/tags.js"
 
+const MAX_TAGS = 10
+const MAX_TAG_LENGTH = 30
 const allowed = ['title', 'content', 'status', 'tags']
 const allowedStatus = ['draft', 'published', 'archived']
 const required = ['title', 'content']
@@ -38,11 +41,13 @@ function validate(data, errors) {
     }
     if ("tags" in data) {
         if (!Array.isArray(data.tags)) {
-            errors.push("tags must be an array");
-        } else if (!data.tags.every(
-            tag => typeof tag === "string" && tag.trim().length > 0
-        )) {
-            errors.push("tags must contain non-empty strings only");
+            errors.push("tags must be an array")
+        } else if (data.tags.length > MAX_TAGS) {
+            errors.push(`a post can have at most ${MAX_TAGS} tags`)
+        } else if (!data.tags.every(tag => typeof tag === "string" && normalizeTag(tag).length > 0)) {
+            errors.push("tags must contain non-empty strings only")
+        } else if (!data.tags.every(tag => normalizeTag(tag).length <= MAX_TAG_LENGTH)) {
+            errors.push(`each tag can be at most ${MAX_TAG_LENGTH} characters`)
         }
     }
 }

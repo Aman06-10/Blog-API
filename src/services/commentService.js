@@ -29,7 +29,7 @@ export async function editComment(commentId,viewerId,data){
     if(comment){
         const post=await Post.findById(comment.post)
         if(!post || !canViewPost(post,viewerId)){
-            throw new ApiError(404,"post not found")
+            throw new ApiError(404,"comment not found")
         }
         if(comment.author.toString()===viewerId.toString()){
             const updatedContent=data.content.trim()
@@ -51,14 +51,14 @@ export async function delComment(commentId,viewerId,viewerRole){
     if(comment){
         const post=await Post.findById(comment.post)
         if((!post || !canViewPost(post,viewerId)) && viewerRole!=="admin"){
-            throw new ApiError(404,"post not found")
+            throw new ApiError(404,"comment not found")
         }
         if(comment.author.toString()===viewerId.toString() || post?.author.toString()===viewerId.toString() || viewerRole==="admin"){
             await Comment.findByIdAndDelete(commentId)
             return comment
         }
         else{
-          throw new ApiError(403,"you cannot modify this comment")
+          throw new ApiError(403,"you cannot delete this comment")
         }
     }
     throw new ApiError(404,"comment not found")

@@ -1,6 +1,7 @@
 import Post from "../models/postModel.js";
 import Comment from "../models/commentModel.js";
 import { ApiError } from "../utils/ApiError.js";
+import { normalizeTags } from "../utils/tags.js";
 
 async function ownershipCheck(postId, userId) {
     const post = await Post.findOne({ _id: postId })
@@ -23,7 +24,9 @@ export function canViewPost(post, viewerId) {
 }
 
 export function createPost(data, authorId) {
-    return Post.create({ ...data, author: authorId })
+    const post = { ...data, author: authorId }
+    if (post.tags) post.tags = normalizeTags(post.tags)
+    return Post.create(post)
 }
 
 export async function getPosts(page,limit) {
@@ -50,6 +53,7 @@ export async function updatePost(postId, userId, data) {
             updateData[key] = data[key]
         }
     }
+    if (updateData.tags) updateData.tags = normalizeTags(updateData.tags)
     const updatedPost = await Post.findByIdAndUpdate(postId, updateData, { returnDocument: "after", runValidators: true })
     return updatedPost
 }

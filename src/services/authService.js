@@ -3,7 +3,7 @@ import { env } from "../config/env.js"
 import { ApiError } from "../utils/ApiError.js"
 import {User} from "../models/userModel.js"
 export function generateToken(data) {
-   return jwt.sign({ id: data._id, email: data.email, role:data.role}, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN })
+   return jwt.sign({ id: data._id}, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN })
 }
 
 export async function registerUser(data){
