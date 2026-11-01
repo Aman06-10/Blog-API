@@ -2,6 +2,7 @@ import Post from "../models/postModel.js";
 import Comment from "../models/commentModel.js";
 import { ApiError } from "../utils/ApiError.js";
 import { normalizeTags } from "../utils/tags.js";
+import Like from "../models/likeModel.js";
 
 async function ownershipCheck(postId, userId) {
     const post = await Post.findOne({ _id: postId })
@@ -60,6 +61,7 @@ export async function updatePost(postId, userId, data) {
 
 export async function deletePost(postId, userId) {
     const post = await ownershipCheck(postId, userId)
+    await Like.deleteMany({targetType:"Post",target:postId})
     await Comment.deleteMany({ post: postId })
     await Post.findByIdAndDelete(postId)
     return post

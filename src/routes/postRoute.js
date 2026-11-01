@@ -5,6 +5,7 @@ import { create ,deleteById,getAll,getById, getMine, updateById} from "../contro
 import { validatePagination } from "../validators/paginationValidator.js"
 import { validateCommentData, validateCommentId } from "../validators/commentValidator.js"
 import { addComment,listComment } from "../controllers/commentController.js"
+import { like,unlike} from "../controllers/likeController.js"
 const posts=express.Router()
 
 posts.post('/',protect,validatePostData,create)
@@ -15,4 +16,6 @@ posts.patch("/:id",protect,validatePostId,validateUpdatePostData,updateById)
 posts.delete("/:id",protect,validatePostId,deleteById)
 posts.post('/:id/comments', protect, validatePostId, validateCommentData, addComment)
 posts.get('/:id/comments', validatePostId,validatePagination, optionalAuth, listComment)
+posts.post('/:id/like',protect,validatePostId,like)
+posts.delete('/:id/like',protect,validatePostId,unlike)
 export default posts
