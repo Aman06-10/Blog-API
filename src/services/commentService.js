@@ -25,7 +25,7 @@ export async function getComments(postId, viewerId, page, limit) {
 }
 
 export async function editComment(commentId,viewerId,data){
-    const comment=await Comment.findById({_id:commentId})
+    const comment=await Comment.findById(commentId)
     if(comment){
         const post=await Post.findById(comment.post)
         if(!post || !canViewPost(post,viewerId)){
@@ -47,7 +47,7 @@ export async function editComment(commentId,viewerId,data){
 }
 
 export async function delComment(commentId,viewerId,viewerRole){
-    const comment=await Comment.findById({_id:commentId})
+    const comment=await Comment.findById(commentId)
     if(comment){
         const post=await Post.findById(comment.post)
         if((!post || !canViewPost(post,viewerId)) && viewerRole!=="admin"){
