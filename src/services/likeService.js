@@ -2,7 +2,7 @@ import Post from "../models/postModel.js"
 import { canViewPost } from "./postService.js"
 import Like from "../models/likeModel.js"
 import { ApiError } from "../utils/ApiError.js"
-
+import Comment from "../models/commentModel.js"
 
 export async function likePost(postId, userId) {
     const post = await Post.findById(postId)

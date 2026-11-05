@@ -61,7 +61,14 @@ export async function updatePost(postId, userId, data) {
 
 export async function deletePost(postId, userId) {
     const post = await ownershipCheck(postId, userId)
-    await Like.deleteMany({targetType:"Post",target:postId})
+    const comments = await Comment.find({ post: postId }).select("_id")
+    const commentIds = comments.map((comment) => comment._id)
+    await Like.deleteMany({
+        $or: [
+            { targetType: "Post", target: postId },
+            { targetType: "Comment", target: { $in: commentIds } },
+        ],
+    })
     await Comment.deleteMany({ post: postId })
     await Post.findByIdAndDelete(postId)
     return post

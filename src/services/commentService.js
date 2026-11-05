@@ -2,6 +2,7 @@ import Comment from "../models/commentModel.js"
 import Post from "../models/postModel.js"
 import { ApiError } from "../utils/ApiError.js"
 import { canViewPost } from "./postService.js"
+import Like from "../models/likeModel.js"
 
 export async function createComment(postId, viewerId, data) {
     const post = await Post.findById(postId)
@@ -54,6 +55,7 @@ export async function delComment(commentId,viewerId,viewerRole){
             throw new ApiError(404,"comment not found")
         }
         if(comment.author.toString()===viewerId.toString() || post?.author.toString()===viewerId.toString() || viewerRole==="admin"){
+            await Like.deleteMany({targetType:"Comment",target:commentId})
             await Comment.findByIdAndDelete(commentId)
             return comment
         }
