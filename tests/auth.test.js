@@ -21,40 +21,191 @@ describe("POST /api/auth/register", () => {
     expect(user).not.toBeNull()
     expect(user.password).not.toBe(validUser.password)
   })
-  it("rejects a duplicate email and username",async () => {
-    const first=await request(app).post("/api/auth/register").send(validUser)
+  it("rejects a duplicate email and username", async () => {
+    const first = await request(app).post("/api/auth/register").send(validUser)
     expect(first.status).toBe(201)
-    const res=await request(app).post("/api/auth/register").send(validUser)
+    const res = await request(app).post("/api/auth/register").send(validUser)
     expect(res.status).toBe(409)
     expect(res.body.success).toBe(false)
     expect(res.body.message).toBe("User or Email already exists")
-    const origionalCount=await User.countDocuments({email:validUser.email})
-    expect(origionalCount).toBe(1)
+    const originalCount = await User.countDocuments({ email: validUser.email })
+    expect(originalCount).toBe(1)
   })
-  it("rejects a duplicate username",async()=>{
-    const first=await request(app).post("/api/auth/register").send(validUser)
+  it("rejects a duplicate username", async () => {
+    const first = await request(app).post("/api/auth/register").send(validUser)
     expect(first.status).toBe(201)
-    const secondUser={...validUser,email:"test12345@gmail.com",}
-    const res=await request(app).post("/api/auth/register").send(secondUser)
+    const secondUser = { ...validUser, email: "test12345@gmail.com", }
+    const res = await request(app).post("/api/auth/register").send(secondUser)
     expect(res.status).toBe(409)
     expect(res.body.success).toBe(false)
     expect(res.body.message).toBe("User or Email already exists")
-    const rejectedCount=await User.countDocuments({email:secondUser.email})
-    const origionalCount=await User.countDocuments({email:validUser.email})
+    const rejectedCount = await User.countDocuments({ email: secondUser.email })
+    const originalCount = await User.countDocuments({ email: validUser.email })
     expect(rejectedCount).toBe(0)
-    expect(origionalCount).toBe(1)
+    expect(originalCount).toBe(1)
   })
-  it("rejects a duplicate email",async()=>{
-    const first=await request(app).post("/api/auth/register").send(validUser)
+  it("rejects a duplicate email", async () => {
+    const first = await request(app).post("/api/auth/register").send(validUser)
     expect(first.status).toBe(201)
-    const secondUser={...validUser,username:"testUser2",}
-    const res=await request(app).post("/api/auth/register").send(secondUser)
+    const secondUser = { ...validUser, username: "testUser2", }
+    const res = await request(app).post("/api/auth/register").send(secondUser)
     expect(res.status).toBe(409)
     expect(res.body.success).toBe(false)
     expect(res.body.message).toBe("User or Email already exists")
-    const rejectedCount=await User.countDocuments({username:secondUser.username})
-    const origionalCount=await User.countDocuments({username:validUser.username})
+    const rejectedCount = await User.countDocuments({ username: secondUser.username })
+    const originalCount = await User.countDocuments({ username: validUser.username })
     expect(rejectedCount).toBe(0)
-    expect(origionalCount).toBe(1)
+    expect(originalCount).toBe(1)
   })
+  it("missing username field", async () => {
+    const user = { ...validUser, username: undefined }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("username field is required")
+    const rejectedCount = await User.countDocuments({ email: user.email })
+    expect(rejectedCount).toBe(0)
+  })
+  it("missing email field", async () => {
+    const user = { ...validUser, email: undefined }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("email field is required")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+  it("missing password field", async () => {
+    const user = { ...validUser, password: undefined }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("password field is required")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+  it("empty username", async () => {
+    const user = { ...validUser, username: " " }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("username length must be between 3 and 50 characters")
+    const rejectedCount = await User.countDocuments({ email: user.email })
+    expect(rejectedCount).toBe(0)
+  })
+  it("empty email", async () => {
+    const user = { ...validUser, email: " " }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("invalid email")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+  it("empty password", async () => {
+    const user = { ...validUser, password: " " }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("password length must be between 6 and 128 characters")
+    const rejectedCount = await User.countDocuments({ email: user.email })
+    expect(rejectedCount).toBe(0)
+  })
+  it("invalid username type", async () => {
+    const user = { ...validUser, username: 123 }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("username must be a string")
+    const rejectedCount = await User.countDocuments({ email: user.email })
+    expect(rejectedCount).toBe(0)
+  })
+  it("invalid email type", async () => {
+    const user = { ...validUser, email:1234}
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("email must be a string")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+  it("invalid password type", async () => {
+    const user = { ...validUser, password:1234}
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("password must be a string")
+    const rejectedCount = await User.countDocuments({ email: user.email })
+    expect(rejectedCount).toBe(0)
+  })
+  it("username length too short", async () => {
+    const user = { ...validUser, username: "ab" }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("username length must be between 3 and 50 characters")
+    const rejectedCount = await User.countDocuments({ email: user.email })
+    expect(rejectedCount).toBe(0)
+  })
+  it("username length too long", async () => {
+    const user = { ...validUser, username: "a".repeat(100) }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("username length must be between 3 and 50 characters")
+    const rejectedCount = await User.countDocuments({ email: user.email })
+    expect(rejectedCount).toBe(0)
+  })
+  it("invalid email format", async () => {
+    const user = { ...validUser, email: "test123gmail.in" }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("invalid email")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+  it("password length too short", async () => {
+    const user = { ...validUser, password: "123" }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("password length must be between 6 and 128 characters")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+  it("password length too long", async () => {
+    const user = { ...validUser, password: "a".repeat(130) }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("password length must be between 6 and 128 characters")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+  it("reject extra fields", async () => {
+    const user = { ...validUser, address: "47A- Street vinland" }
+    const res = await request(app).post("/api/auth/register").send(user)
+    expect(res.status).toBe(400)
+    expect(res.body.success).toBe(false)
+    expect(res.body.message).toBe("invalid register data")
+    expect(res.body.errors).toContain("address field is not allowed")
+    const rejectedCount = await User.countDocuments({ username: user.username })
+    expect(rejectedCount).toBe(0)
+  })
+
 })
