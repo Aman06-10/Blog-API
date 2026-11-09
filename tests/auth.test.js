@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import request from "supertest"
 import app from "../src/app.js"
 import { User } from "../src/models/userModel.js"
-import { validUser } from "./helpers/testData.js"
+import { validLoginData, validUser } from "./helpers/testData.js"
 
 describe("POST /api/auth/register", () => {
   it("registers a new user", async () => {
@@ -128,7 +128,7 @@ describe("POST /api/auth/register", () => {
     expect(rejectedCount).toBe(0)
   })
   it("invalid email type", async () => {
-    const user = { ...validUser, email:1234}
+    const user = { ...validUser, email: 1234 }
     const res = await request(app).post("/api/auth/register").send(user)
     expect(res.status).toBe(400)
     expect(res.body.success).toBe(false)
@@ -138,7 +138,7 @@ describe("POST /api/auth/register", () => {
     expect(rejectedCount).toBe(0)
   })
   it("invalid password type", async () => {
-    const user = { ...validUser, password:1234}
+    const user = { ...validUser, password: 1234 }
     const res = await request(app).post("/api/auth/register").send(user)
     expect(res.status).toBe(400)
     expect(res.body.success).toBe(false)
@@ -208,4 +208,110 @@ describe("POST /api/auth/register", () => {
     expect(rejectedCount).toBe(0)
   })
 
+})
+
+
+describe("POST /api/auth/login", () => {
+  it("logs in a registered user", async () => {
+    const register = await request(app).post("/api/auth/register").send(validUser)
+    expect(register.status).toBe(201)
+    const login = await request(app).post("/api/auth/login").send(validLoginData)
+    expect(login.status).toBe(200)
+    expect(login.body.success).toBe(true)
+    expect(login.body.data.email).toBe(validUser.email)
+    expect(login.body.data.password).toBeUndefined()
+    const cookie = login.headers["set-cookie"][0]
+    expect(cookie).toContain("token=")
+    expect(cookie).toContain("HttpOnly")
+    expect(cookie).toContain("Max-Age=604800")
+  })
+  it("rejects an extra field", async () => {
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,username:"pawan"})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("username field is not allowed")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects an unregistered email", async () => {
+    const login = await request(app).post("/api/auth/login").send(validLoginData)
+    expect(login.status).toBe(401)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("Invalid Email Or Password")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects an invalid email type",async()=>{
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,email:1234567})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("email must be a string")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects an invalid password type",async()=>{
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,password:1234567})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("password must be a string")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects an empty email",async()=>{
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,email:""})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("invalid email")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects an empty password",async()=>{
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,password:""})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("password cannot be empty")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects a wrong password",async()=>{
+    const register = await request(app).post("/api/auth/register").send(validUser)
+    expect(register.status).toBe(201)
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,password:"1232ww23"})
+    expect(login.status).toBe(401)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("Invalid Email Or Password")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects a wrong email",async()=>{
+    const register = await request(app).post("/api/auth/register").send(validUser)
+    expect(register.status).toBe(201)
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,email:"123@gmail.com"})
+    expect(login.status).toBe(401)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("Invalid Email Or Password")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects a missing password",async()=>{
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,password:undefined})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("password field is required")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects a missing email",async()=>{
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,email:undefined})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("email field is required")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
+  it("rejects a invalid email format",async()=>{
+    const login = await request(app).post("/api/auth/login").send({...validLoginData,email:"testgmail.com"})
+    expect(login.status).toBe(400)
+    expect(login.body.success).toBe(false)
+    expect(login.body.message).toBe("invalid login data")
+    expect(login.body.errors).toContain("invalid email")
+    expect(login.headers["set-cookie"]).toBeUndefined()
+  })
 })
