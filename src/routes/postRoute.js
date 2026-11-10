@@ -6,11 +6,12 @@ import { validatePagination } from "../validators/paginationValidator.js"
 import { validateCommentData, validateCommentId } from "../validators/commentValidator.js"
 import { addComment,listComment } from "../controllers/commentController.js"
 import { like,unlike} from "../controllers/likeController.js"
+import { validatePostQuery, publicListKeys, mineKeys } from "../validators/queriesValidator.js"
 const posts=express.Router()
 
 posts.post('/',protect,validatePostData,create)
-posts.get('/',validatePagination,getAll)
-posts.get('/mine',protect,validatePagination,getMine)
+posts.get('/',validatePostQuery(publicListKeys),validatePagination,getAll)
+posts.get('/mine',validatePostQuery(mineKeys),protect,validatePagination,getMine)
 posts.get('/:id',validatePostId,optionalAuth,getById)
 posts.patch("/:id",protect,validatePostId,validateUpdatePostData,updateById)
 posts.delete("/:id",protect,validatePostId,deleteById)

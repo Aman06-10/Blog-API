@@ -20,6 +20,26 @@ async function ownershipCheck(postId, userId) {
     return post
 }
 
+function escapeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+function buildQuery(base, filters = {}) {
+    const query = {}
+    if (filters.tags) query.tags = { $all: filters.tags }
+    if (filters.author) query.author = filters.author
+    if (filters.status) query.status = filters.status
+    if (filters.search) {
+        query.title = { $regex: escapeRegex(filters.search), $options: "i" }
+    }
+    return { ...query, ...base } 
+}
+
+function buildSort(filters = {}) {
+    const dir = filters.sort === "oldest" ? 1 : -1
+    return { createdAt: dir, _id: dir }
+}
+
 export function canViewPost(post, viewerId) {
     return post.status === "published" || post.author.toString() === viewerId?.toString()
 }
@@ -30,11 +50,12 @@ export function createPost(data, authorId) {
     return Post.create(post)
 }
 
-export async function getPosts(page,limit) {
+export async function getPosts(page, limit, filters) {
     const skip = (page - 1) * limit
-    const posts = await Post.find({ status: "published" }).sort({ createdAt: -1 ,_id:-1}).skip(skip).limit(limit)
-   const postsCount = await Post.countDocuments({status:"published"})
-    return { posts, postsCount ,page,limit}
+    const query = buildQuery({ status: "published" }, filters)
+    const posts = await Post.find(query).sort(buildSort(filters)).skip(skip).limit(limit)
+    const postsCount = await Post.countDocuments(query)
+    return { posts, postsCount, page, limit }
 }
 
 export async function getPostById(postId, viewerId) {
@@ -74,9 +95,10 @@ export async function deletePost(postId, userId) {
     return post
 }
 
-export async function getMyPosts(userId,page,limit) {
+export async function getMyPosts(userId, page, limit, filters) {
     const skip = (page - 1) * limit
-    const posts = await Post.find({ author: userId }).sort({ createdAt: -1 ,_id:-1}).skip(skip).limit(limit)
-    const postsCount = await Post.countDocuments({author:userId})
-    return { posts, postsCount ,page,limit}
+    const query = buildQuery({ author: userId }, filters)
+    const posts = await Post.find(query).sort(buildSort(filters)).skip(skip).limit(limit)
+    const postsCount = await Post.countDocuments(query)
+    return { posts, postsCount, page, limit }
 }

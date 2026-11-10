@@ -6,13 +6,13 @@ export async function create(req,res){
 }
 
 export async function getAll(req,res){
-    const {posts,postsCount,page,limit}=await getPosts(req.pagination.page,req.pagination.limit)
+    const {posts,postsCount,page,limit}=await getPosts(req.pagination.page,req.pagination.limit,req.filters)
     const totalPages=(Math.ceil(postsCount / limit))
     res.status(200).json({success:true, message:"Posts fetched successfully",data:{posts,postsCount,page,totalPages}})
 }
 
 export async function getMine(req,res){
-    const {posts,postsCount,page,limit}=await getMyPosts(req.user.id,req.pagination.page,req.pagination.limit)
+    const {posts,postsCount,page,limit}=await getMyPosts(req.user.id,req.pagination.page,req.pagination.limit,req.filters)
     const totalPages=(Math.ceil(postsCount / limit))
     res.status(200).json({success:true, message:"Posts fetched successfully",data:{posts,postsCount,page,totalPages}})
 }
