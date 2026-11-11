@@ -15,10 +15,18 @@ export const globalLimiter = rateLimit({
     handler
 })
 
-export const authLimiter = rateLimit({
+export const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: isTest ? 100000 : 10,
     skipSuccessfulRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler
+})
+export const registerLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: isTest ? 100000 : 10,
+    skipSuccessfulRequests: false,
     standardHeaders: true,
     legacyHeaders: false,
     handler

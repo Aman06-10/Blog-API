@@ -3,7 +3,7 @@ import cors from "cors"
 import cookieParser from "cookie-parser"
 import { ApiError } from "./utils/ApiError.js"
 import { errorHandler } from "./middlewares/errorsMiddleware.js"
-import { globalLimiter, authLimiter } from "./middlewares/rateLimiters.js"
+import { globalLimiter } from "./middlewares/rateLimiters.js"
 import auth from "./routes/authRoutes.js"
 import posts from "./routes/postRoute.js"
 import comments from "./routes/commentRoute.js"
@@ -26,7 +26,7 @@ app.use(globalLimiter)
 app.use(express.json({ limit: "10kb" }))
 app.use(cookieParser())
 
-app.use("/api/auth", authLimiter, auth)
+app.use("/api/auth", auth)
 app.use("/api/posts", posts)
 app.use("/api/comments", comments)
 
