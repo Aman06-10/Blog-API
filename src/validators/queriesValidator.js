@@ -63,7 +63,7 @@ export function validatePostQuery(allowedKeys) {
       }
     }
     if (errors.length > 0) {
-      return res.status(400).json({success: false,message: "invalid query params", errors})
+        throw new ApiError(400, "invalid query data", errors)
     }
     req.filters = filters
     next()

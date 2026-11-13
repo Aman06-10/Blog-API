@@ -67,17 +67,16 @@ export async function getPostById(postId, viewerId) {
 }
 
 export async function updatePost(postId, userId, data) {
-    await ownershipCheck(postId, userId)
-    let updateData = {}
+    const post = await ownershipCheck(postId, userId)
     const allowed = ['title', 'content', 'status', 'tags']
     for (const key of allowed) {
         if (key in data) {
-            updateData[key] = data[key]
+            post[key] = data[key]
         }
     }
-    if (updateData.tags) updateData.tags = normalizeTags(updateData.tags)
-    const updatedPost = await Post.findByIdAndUpdate(postId, updateData, { returnDocument: "after", runValidators: true })
-    return updatedPost
+    if (post.isModified('tags')) post.tags = normalizeTags(post.tags)
+    await post.save()
+    return post
 }
 
 export async function deletePost(postId, userId) {
