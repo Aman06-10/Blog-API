@@ -32,7 +32,7 @@ function buildQuery(base, filters = {}) {
     if (filters.search) {
         query.title = { $regex: escapeRegex(filters.search), $options: "i" }
     }
-    return { ...query, ...base } 
+    return { ...query, ...base }
 }
 
 function buildSort(filters = {}) {
@@ -79,8 +79,17 @@ export async function updatePost(postId, userId, data) {
     return post
 }
 
-export async function deletePost(postId, userId) {
-    const post = await ownershipCheck(postId, userId)
+export async function deletePost(postId, userId, scope) {
+    let post
+    if (scope === "any") {
+        post = await Post.findById(postId)
+        if (!post || !canViewPost(post, userId)) {
+            throw new ApiError(404, "Post Not Found")
+        }
+    }
+    else {
+        post = await ownershipCheck(postId, userId)
+    }
     const comments = await Comment.find({ post: postId }).select("_id")
     const commentIds = comments.map((comment) => comment._id)
     await Like.deleteMany({

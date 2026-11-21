@@ -28,6 +28,6 @@ export async function updateById(req,res){
 }
 
 export async function deleteById(req,res){
-    const deletedPost=await deletePost(req.params.id,req.user.id)
+    const deletedPost = await deletePost(req.params.id, req.user.id, req.permissionScope)
     res.status(200).json({success:true, message:"Post deleted successfully", data:deletedPost})
 }

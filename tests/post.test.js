@@ -3,6 +3,7 @@ import request from "supertest"
 import app from "../src/app.js"
 import Post from "../src/models/postModel.js"
 import { validLoginData, validUser, validUser2, validPost1, validPost2 } from "./helpers/testData.js"
+import { registerAgent } from "./helpers/setAuth.js"
 
 describe("Post /api/posts", () => {
     it("create a post successfully", async () => {
@@ -31,20 +32,17 @@ describe("Post /api/posts", () => {
         expect(res.body.success).toBe(false)
     })
     it("creates a post using an agent (cookie persists)", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent,user} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send(validPost1)
         expect(res.status).toBe(201)
         expect(res.body.success).toBe(true)
         const post = await Post.findOne({ title: validPost1.title })
+        expect(post.author.toString()).toBe(user._id.toString())
         expect(post).not.toBeNull()
         expect(post.content).toBe(validPost1.content)
     })
     it("rejects post creation with empty postData", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({})
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -53,9 +51,7 @@ describe("Post /api/posts", () => {
         expect(res.body.errors).toContain("content field is required")
     })
     it("rejects post creation with title missing", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, title: undefined })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -65,9 +61,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with content missing", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, content: undefined })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -77,9 +71,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with extra field", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, blog: "api" })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -89,9 +81,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with title empty", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, title: " " })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -101,9 +91,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with content empty", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, content: " " })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -113,9 +101,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with invalid title data type", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, title: 12345 })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -125,9 +111,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with invalid content data type", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, content: 12345 })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -137,9 +121,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with invalid status data type", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, status: 12345 })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -149,9 +131,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with invalid tags data type", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, tags: "test" })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -161,9 +141,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with title too short", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, title: "ab" })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -173,9 +151,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with title too long", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, title: "a".repeat(151) })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -185,9 +161,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with content too short", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, content: "short" })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -197,9 +171,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("rejects post creation with invalid status value", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent} = await registerAgent(validUser)
         const res = await agent.post("/api/posts").send({ ...validPost1, status: "pending" })
         expect(res.status).toBe(400)
         expect(res.body.success).toBe(false)
@@ -208,9 +180,7 @@ describe("Post /api/posts", () => {
         expect(rejectedCount).toBe(0)
     })
     it("creates a post successfully with multiple tags", async () => {
-        const agent = request.agent(app)
-        await agent.post("/api/auth/register").send(validUser).expect(201)
-        await agent.post("/api/auth/login").send(validLoginData).expect(200)
+        const {agent,user} = await registerAgent(validUser)
         const postData = {...validPost1,tags: ["nodejs", "mongodb", "backend"]}
         const res = await agent.post("/api/posts").send(postData)
         expect(res.status).toBe(201)
@@ -218,5 +188,6 @@ describe("Post /api/posts", () => {
         const post = await Post.findOne({ title: postData.title })
         expect(post).not.toBeNull()
         expect(post.tags).toEqual(["nodejs", "mongodb", "backend"])
+        expect(post.author.toString()).toBe(user._id.toString())
     })
 })

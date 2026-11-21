@@ -1,6 +1,7 @@
 import express from "express"
 import { validatePostData ,validatePostId, validateUpdatePostData} from "../validators/postValidator.js"
 import { protect,optionalAuth } from "../middlewares/authMiddleware.js"
+import { authorize } from "../middlewares/authorize.js"
 import { create ,deleteById,getAll,getById, getMine, updateById} from "../controllers/postController.js"
 import { validatePagination } from "../validators/paginationValidator.js"
 import { validateCommentData, validateCommentId } from "../validators/commentValidator.js"
@@ -13,8 +14,8 @@ posts.post('/',protect,validatePostData,create)
 posts.get('/',validatePostQuery(publicListKeys),validatePagination,getAll)
 posts.get('/mine',validatePostQuery(mineKeys),protect,validatePagination,getMine)
 posts.get('/:id',validatePostId,optionalAuth,getById)
-posts.patch("/:id",protect,validatePostId,validateUpdatePostData,updateById)
-posts.delete("/:id",protect,validatePostId,deleteById)
+posts.patch("/:id", protect, authorize("post:update"), validatePostId, validateUpdatePostData, updateById)
+posts.delete("/:id", protect, authorize("post:delete"), validatePostId, deleteById)
 posts.post('/:id/comments', protect, validatePostId, validateCommentData, addComment)
 posts.get('/:id/comments', validatePostId,validatePagination, optionalAuth, listComment)
 posts.post('/:id/like',protect,validatePostId,like)

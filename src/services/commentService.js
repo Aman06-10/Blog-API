@@ -47,21 +47,21 @@ export async function editComment(commentId,viewerId,data){
     throw new ApiError(404,"comment not found")
 }
 
-export async function delComment(commentId,viewerId,viewerRole){
-    const comment=await Comment.findById(commentId)
-    if(comment){
-        const post=await Post.findById(comment.post)
-        if((!post || !canViewPost(post,viewerId)) && viewerRole!=="admin"){
-            throw new ApiError(404,"comment not found")
+export async function delComment(commentId, viewerId, scope) {
+    const comment = await Comment.findById(commentId)
+    if (comment) {
+        const post = await Post.findById(comment.post)
+        if ((!post || !canViewPost(post, viewerId)) && scope !== "any") {
+            throw new ApiError(404, "comment not found")
         }
-        if(comment.author.toString()===viewerId.toString() || post?.author.toString()===viewerId.toString() || viewerRole==="admin"){
-            await Like.deleteMany({targetType:"Comment",target:commentId})
+        if (scope === "any" ||(scope === "own" &&(comment.author.toString() === viewerId.toString() ||post?.author.toString() === viewerId.toString()))){
+            await Like.deleteMany({ targetType: "Comment", target: commentId })
             await Comment.findByIdAndDelete(commentId)
             return comment
-        }
-        else{
-          throw new ApiError(403,"you cannot delete this comment")
+        } 
+        else {
+            throw new ApiError(403, "you cannot delete this comment")
         }
     }
-    throw new ApiError(404,"comment not found")
+    throw new ApiError(404, "comment not found")
 }

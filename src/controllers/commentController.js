@@ -17,6 +17,6 @@ export async function updateComment(req,res){
 }
 
 export async function deleteComment(req,res){
-    const deletedComment=await delComment(req.params.id,req.user.id,req.user.role)
+    const deletedComment = await delComment(req.params.id, req.user.id, req.permissionScope)
     res.status(200).json({success:true,message:"comment deleted successfully",data:deletedComment})
 }

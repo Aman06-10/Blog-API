@@ -1,17 +1,17 @@
 export const validUser={
-    username:"TestUser",
-    email:"test@gmail.com",
+    username:"TestUser1",
+    email:"test1@gmail.com",
     password:"test##1290"
 }
 
 export const validUser2={
-    username:"TestUser",
-    email:"test@gmail.com",
-    password:"test##1290"
+    username:"TestUser2",
+    email:"test2@gmail.com",
+    password:"test##1288"
 }
 
 export const validLoginData={
-    email:"test@gmail.com",
+    email:"test1@gmail.com",
     password:"test##1290"
 }
 

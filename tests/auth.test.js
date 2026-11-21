@@ -334,7 +334,7 @@ describe("POST /api/auth/login", () => {
 
     const login = await request(app)
       .post("/api/auth/login")
-      .send({ email: "  TEST@GMAIL.COM  ", password: validUser.password })
+      .send({ email: "  TEST1@GMAIL.COM  ", password: validUser.password })
     expect(login.status).toBe(200)
     expect(login.body.success).toBe(true)
     expect(login.body.data.email).toBe(validUser.email.toLowerCase())
