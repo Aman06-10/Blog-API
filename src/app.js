@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser"
 import { ApiError } from "./utils/ApiError.js"
 import { errorHandler } from "./middlewares/errorsMiddleware.js"
 import { globalLimiter } from "./middlewares/rateLimiters.js"
+import admin from "./routes/adminRoutes.js"
 import auth from "./routes/authRoutes.js"
 import posts from "./routes/postRoute.js"
 import comments from "./routes/commentRoute.js"
@@ -29,6 +30,7 @@ app.use(cookieParser())
 app.use("/api/auth", auth)
 app.use("/api/posts", posts)
 app.use("/api/comments", comments)
+app.use("/api/admin", admin)
 
 app.use((req, res, next) => {
     next(new ApiError(404, "Page Not Found"))

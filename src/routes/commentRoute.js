@@ -7,8 +7,8 @@ import { addLike,removeLike } from "../controllers/likeController.js"
 const comments=express.Router()
 
 comments.patch('/:id', protect, authorize("comment:update"), validateCommentId, validateCommentData, updateComment)
-comments.delete('/:id',protect,validateCommentId,deleteComment)
-comments.post('/:id/like',protect,validateCommentId,addLike)
 comments.delete('/:id', protect, authorize("comment:delete"), validateCommentId, deleteComment)
+comments.post('/:id/like', protect, validateCommentId, addLike)
+comments.delete('/:id/like', protect, validateCommentId, removeLike)
 
 export default comments
