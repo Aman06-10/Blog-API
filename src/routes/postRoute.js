@@ -12,7 +12,7 @@ const posts=express.Router()
 
 posts.post('/',protect,validatePostData,create)
 posts.get('/',validatePostQuery(publicListKeys),validatePagination,getAll)
-posts.get('/mine',validatePostQuery(mineKeys),protect,validatePagination,getMine)
+posts.get('/mine',protect,validatePostQuery(mineKeys),validatePagination,getMine)
 posts.get('/:id',validatePostId,optionalAuth,getById)
 posts.patch("/:id", protect, authorize("post:update"), validatePostId, validateUpdatePostData, updateById)
 posts.delete("/:id", protect, authorize("post:delete"), validatePostId, deleteById)

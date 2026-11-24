@@ -1,4 +1,4 @@
-import { getUsers, updateUserRole, getStats } from "../services/adminService.js"
+import { getUsers, updateUserRole } from "../services/adminService.js"
 
 export async function listUsers(req, res) {
     const { page, limit } = req.pagination
@@ -14,9 +14,4 @@ export async function listUsers(req, res) {
 export async function changeRole(req, res) {
     const user = await updateUserRole(req.params.id, req.user._id, req.body.role)
     res.status(200).json({ success: true, message: "user role updated successfully", data: user })
-}
-
-export async function statsOverview(req, res) {
-    const stats = await getStats()
-    res.status(200).json({ success: true, message: "stats fetched successfully", data: stats })
 }
