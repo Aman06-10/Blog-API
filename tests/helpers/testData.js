@@ -28,3 +28,8 @@ export const validPost2={
     tags: ["tag2"], 
     status: "published" 
 }
+export const validAdmin = {
+    username: "AdminUser",
+    email: "admin@test.com",
+    password: "admin##1234"
+}
